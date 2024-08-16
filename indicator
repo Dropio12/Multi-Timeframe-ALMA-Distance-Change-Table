@@ -1,0 +1,147 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © Kokoabe
+
+//@version=5
+indicator("Multi-Timeframe ALMA Distance & % Change Table", overlay=true)
+
+// Group for Timeframes
+tfGroup = "Timeframes"
+
+// Timeframe inputs
+tf1 = input.string("1", title="Timeframe 1", options=["1S", "5S", "15S", "30S", "45S", "60S", "1", "5", "15", "30", "45", "60", "120", "180", "240", "D", "W", "M", "3M", "6M", "12M"], group=tfGroup)
+tf2 = input.string("15", title="Timeframe 2", options=["1S", "5S", "15S", "30S", "45S", "60S", "1", "5", "15", "30", "45", "60", "120", "180", "240", "D", "W", "M", "3M", "6M", "12M"], group=tfGroup)
+tf3 = input.string("240", title="Timeframe 3", options=["1S", "5S", "15S", "30S", "45S", "60S", "1", "5", "15", "30", "45", "60", "120", "180", "240", "D", "W", "M", "3M", "6M", "12M"], group=tfGroup)
+tf4 = input.string("D", title="Timeframe 4", options=["1S", "5S", "15S", "30S", "45S", "60S", "1", "5", "15", "30", "45", "60", "120", "180", "240", "D", "W", "M", "3M", "6M", "12M"], group=tfGroup)
+
+// Group for ALMA Settings
+almaGroup1 = "ALMA 1 Settings"
+almaGroup2 = "ALMA 2 Settings"
+almaGroup3 = "ALMA 3 Settings"
+
+// ALMA settings inputs
+seriesInput1 = input.string("close", title="ALMA Series 1", options=["close", "open", "high", "low", "hl2", "hlc3", "ohlc4"], group=almaGroup1)
+almaLength1 = input.int(50, title="ALMA Length 1", group=almaGroup1)
+almaOffset1 = input.float(0.85, title="ALMA Offset 1", minval=0.0, maxval=1.0, group=almaGroup1)
+almaGamma1 = input.float(6.0, title="ALMA Gamma 1", minval=1.0, group=almaGroup1)
+
+seriesInput2 = input.string("close", title="ALMA Series 2", options=["close", "open", "high", "low", "hl2", "hlc3", "ohlc4"], group=almaGroup2)
+almaLength2 = input.int(100, title="ALMA Length 2", group=almaGroup2)
+almaOffset2 = input.float(0.85, title="ALMA Offset 2", minval=0.0, maxval=1.0, group=almaGroup2)
+almaGamma2 = input.float(6.0, title="ALMA Gamma 2", minval=1.0, group=almaGroup2)
+
+seriesInput3 = input.string("close", title="ALMA Series 3", options=["close", "open", "high", "low", "hl2", "hlc3", "ohlc4"], group=almaGroup3)
+almaLength3 = input.int(200, title="ALMA Length 3", group=almaGroup3)
+almaOffset3 = input.float(0.85, title="ALMA Offset 3", minval=0.0, maxval=1.0, group=almaGroup3)
+almaGamma3 = input.float(6.0, title="ALMA Gamma 3", minval=1.0, group=almaGroup3)
+
+// Convert the selected series into variables
+series1 = switch seriesInput1
+    "close" => close
+    "open" => open
+    "high" => high
+    "low" => low
+    "hl2" => hl2
+    "hlc3" => hlc3
+    "ohlc4" => ohlc4
+
+series2 = switch seriesInput2
+    "close" => close
+    "open" => open
+    "high" => high
+    "low" => low
+    "hl2" => hl2
+    "hlc3" => hlc3
+    "ohlc4" => ohlc4
+
+series3 = switch seriesInput3
+    "close" => close
+    "open" => open
+    "high" => high
+    "low" => low
+    "hl2" => hl2
+    "hlc3" => hlc3
+    "ohlc4" => ohlc4
+
+// Checkbox to choose between value or percentage
+otherFeaturesGroup = "Other Features"
+displayAsPercentage = input.bool(true, title="Display as Percentage", group=otherFeaturesGroup)
+
+// Inputs for decimal places
+decimalPlacesDistance = input.int(2, title="Decimal Places for Distance", minval=0, maxval=10, group=otherFeaturesGroup)
+decimalPlacesPercentage = input.int(3, title="Decimal Places for Percentage", minval=0, maxval=10, group=otherFeaturesGroup)
+
+// Plot ALMA
+alma1 = ta.alma(series1, almaLength1, almaOffset1, almaGamma1)
+alma2 = ta.alma(series2, almaLength2, almaOffset2, almaGamma2)
+alma3 = ta.alma(series3, almaLength3, almaOffset3, almaGamma3)
+
+plot(alma1, color=color.orange, title="ALMA 1")
+plot(alma2, color=color.teal, title="ALMA 2")
+plot(alma3, color=color.green, title="ALMA 3")
+
+// Create a table in the top-right corner
+var table almaTable = table.new(position.top_right, 7, 4, border_width=1, frame_color=color.blue, bgcolor=color.black)
+
+// Table header
+if (bar_index == 0) 
+    table.cell(almaTable, 0, 0, text="Timeframe", text_color=color.white, bgcolor=color.blue)
+    table.cell(almaTable, 0, 1, text="Distance ALMA " + str.tostring(almaLength1), text_color=color.white, bgcolor=color.blue)
+    table.cell(almaTable, 0, 2, text="Distance ALMA " + str.tostring(almaLength2), text_color=color.white, bgcolor=color.blue)
+    table.cell(almaTable, 0, 3, text="Distance ALMA " + str.tostring(almaLength3), text_color=color.white, bgcolor=color.blue)
+
+// Calculate ALMA for each timeframe and additional ALMAs using request.security
+alma_tf1 = request.security(syminfo.tickerid, tf1, ta.alma(series1, almaLength1, almaOffset1, almaGamma1))
+alma_tf2 = request.security(syminfo.tickerid, tf2, ta.alma(series1, almaLength1, almaOffset1, almaGamma1))
+alma_tf3 = request.security(syminfo.tickerid, tf3, ta.alma(series1, almaLength1, almaOffset1, almaGamma1))
+alma_tf4 = request.security(syminfo.tickerid, tf4, ta.alma(series1, almaLength1, almaOffset1, almaGamma1))
+
+alma_tf1_2 = request.security(syminfo.tickerid, tf1, ta.alma(series2, almaLength2, almaOffset2, almaGamma2))
+alma_tf2_2 = request.security(syminfo.tickerid, tf2, ta.alma(series2, almaLength2, almaOffset2, almaGamma2))
+alma_tf3_2 = request.security(syminfo.tickerid, tf3, ta.alma(series2, almaLength2, almaOffset2, almaGamma2))
+alma_tf4_2 = request.security(syminfo.tickerid, tf4, ta.alma(series2, almaLength2, almaOffset2, almaGamma2))
+
+alma_tf1_3 = request.security(syminfo.tickerid, tf1, ta.alma(series3, almaLength3, almaOffset3, almaGamma3))
+alma_tf2_3 = request.security(syminfo.tickerid, tf2, ta.alma(series3, almaLength3, almaOffset3, almaGamma3))
+alma_tf3_3 = request.security(syminfo.tickerid, tf3, ta.alma(series3, almaLength3, almaOffset3, almaGamma3))
+alma_tf4_3 = request.security(syminfo.tickerid, tf4, ta.alma(series3, almaLength3, almaOffset3, almaGamma3))
+
+// Calculate the distance between the current price and each ALMA
+distance_tf1 = close - alma_tf1
+distance_tf2 = close - alma_tf2
+distance_tf3 = close - alma_tf3
+distance_tf4 = close - alma_tf4
+
+distance_tf1_2 = close - alma_tf1_2
+distance_tf2_2 = close - alma_tf2_2
+distance_tf3_2 = close - alma_tf3_2
+distance_tf4_2 = close - alma_tf4_2
+
+distance_tf1_3 = close - alma_tf1_3
+distance_tf2_3 = close - alma_tf2_3
+distance_tf3_3 = close - alma_tf3_3
+distance_tf4_3 = close - alma_tf4_3
+
+// Helper function to determine color based on value
+colorForValue(value) =>
+    value >= 0 ? color.green : color.red
+
+// Display the distances or percentages in the table
+table.cell(almaTable, 1, 0, text=tf1, text_color=color.white)
+table.cell(almaTable, 1, 1, text=displayAsPercentage ? str.tostring((distance_tf1 / alma_tf1) * 100, "#.##") + "%" : str.tostring(distance_tf1, "#.##"), text_color=colorForValue(distance_tf1))
+table.cell(almaTable, 1, 2, text=displayAsPercentage ? str.tostring((distance_tf1_2 / alma_tf1_2) * 100, "#.##") + "%" : str.tostring(distance_tf1_2, "#.##"), text_color=colorForValue(distance_tf1_2))
+table.cell(almaTable, 1, 3, text=displayAsPercentage ? str.tostring((distance_tf1_3 / alma_tf1_3) * 100, "#.##") + "%" : str.tostring(distance_tf1_3, "#.##"), text_color=colorForValue(distance_tf1_3))
+
+table.cell(almaTable, 2, 0, text=tf2, text_color=color.white)
+table.cell(almaTable, 2, 1, text=displayAsPercentage ? str.tostring((distance_tf2 / alma_tf2) * 100, "#.##") + "%" : str.tostring(distance_tf2, "#.##"), text_color=colorForValue(distance_tf2))
+table.cell(almaTable, 2, 2, text=displayAsPercentage ? str.tostring((distance_tf2_2 / alma_tf2_2) * 100, "#.##") + "%" : str.tostring(distance_tf2_2, "#.##"), text_color=colorForValue(distance_tf2_2))
+table.cell(almaTable, 2, 3, text=displayAsPercentage ? str.tostring((distance_tf2_3 / alma_tf2_3) * 100, "#.##") + "%" : str.tostring(distance_tf2_3, "#.##"), text_color=colorForValue(distance_tf2_3))
+
+table.cell(almaTable, 3, 0, text=tf3, text_color=color.white)
+table.cell(almaTable, 3, 1, text=displayAsPercentage ? str.tostring((distance_tf3 / alma_tf3) * 100, "#.##") + "%" : str.tostring(distance_tf3, "#.##"), text_color=colorForValue(distance_tf3))
+table.cell(almaTable, 3, 2, text=displayAsPercentage ? str.tostring((distance_tf3_2 / alma_tf3_2) * 100, "#.##") + "%" : str.tostring(distance_tf3_2, "#.##"), text_color=colorForValue(distance_tf3_2))
+table.cell(almaTable, 3, 3, text=displayAsPercentage ? str.tostring((distance_tf3_3 / alma_tf3_3) * 100, "#.##") + "%" : str.tostring(distance_tf3_3, "#.##"), text_color=colorForValue(distance_tf3_3))
+
+table.cell(almaTable, 4, 0, text=tf4, text_color=color.white)
+table.cell(almaTable, 4, 1, text=displayAsPercentage ? str.tostring((distance_tf4 / alma_tf4) * 100, "#.##") + "%" : str.tostring(distance_tf4, "#.##"), text_color=colorForValue(distance_tf4))
+table.cell(almaTable, 4, 2, text=displayAsPercentage ? str.tostring((distance_tf4_2 / alma_tf4_2) * 100, "#.##") + "%" : str.tostring(distance_tf4_2, "#.##"), text_color=colorForValue(distance_tf4_2))
+table.cell(almaTable, 4, 3, text=displayAsPercentage ? str.tostring((distance_tf4_3 / alma_tf4_3) * 100, "#.##") + "%" : str.tostring(distance_tf4_3, "#.##"), text_color=colorForValue(distance_tf4_3))
