@@ -1,8 +1,8 @@
-Here's a README tailored for GitHub:
-
 ---
 
 # Multi-Timeframe ALMA Distance & Percentage Change Table
+
+https://www.tradingview.com/script/1bWUlcRH-Multi-Timeframe-EMA-Distance-Change-Table/?utm_source=notification_email&utm_medium=email&utm_campaign=notification_vote
 
 This Pine Script™ indicator calculates and displays the distance between the current price and the ALMA (Arnaud Legoux Moving Average) across multiple timeframes. It also provides an option to show these distances as percentages. Negative values are displayed in red, and positive values are displayed in green.
 
@@ -60,5 +60,3 @@ Feel free to contribute by submitting issues or pull requests. Your feedback and
 This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0. See [Mozilla Public License 2.0](https://mozilla.org/MPL/2.0/) for more details.
 
 ---
-
-Feel free to adjust or expand any sections to better fit your project's specifics or add any additional information!
